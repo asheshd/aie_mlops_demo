@@ -1,0 +1,45 @@
+name: AIE MLOPs Runner
+on: [push]
+
+jobs:
+  run:
+    runs-on: [ubuntu-latest]
+  
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: iterative/setup-cml@v1
+
+      - uses: iterative/setup-dvc@v1
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: cml
+        env:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          # Pull dataset with DVC 
+          
+          pip install -r requirements.txt
+
+          dvc pull data -v
+          
+          # Reproduce pipeline if any changes detected in dependencies
+          dvc repro 
+          
+          # Use DVC metrics diff to compare metrics to main
+          git fetch --prune --unshallow
+          dvc metrics diff --show-md $DEFAULT_BRANCH >> report.md
+          
+          # Add figure to report
+          dvc plots diff --target reports/loss.csv --show-vega $DEFAULT_BRANCH > vega.json
+                   
+          vl2png vega.json -s 1.5 > reports/plot.png
+          
+          cml publish --md reports/plot.png >> report.md
+
+          cml send-comment report.md
