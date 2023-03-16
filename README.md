@@ -1,7 +1,7 @@
 aie_mlops_demo
 ==============================
 
-This is an AI E project demo
+This is an AI E MLOps project demo.
 
 Project Organization
 ------------
