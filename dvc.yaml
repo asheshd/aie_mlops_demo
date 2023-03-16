@@ -1,0 +1,17 @@
+stages:
+  train:
+    cmd: python src/models/train_model.py
+    # deps:
+      # - data
+      # - src/models/train_model.py
+  predict:
+    cmd: python src/models/predict_model.py
+    # deps:
+    # - data
+    # - src/models/predict_model.py
+    metrics:
+    - reports/metrics.json:
+        cache: false
+    plots:
+    - reports/loss.csv:
+        cache: false
